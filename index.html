@@ -4,22 +4,23 @@
   <meta charset="UTF-8">
   <title>ON VA OU BABOU ?</title>
   <link rel="stylesheet" href="./style.css">
-
 </head>
 <body>
 <div class="info-popup"></div>
-
+<div class="weather-popup"></div>
 <div class="container">
       <input type="text" placeholder="On va où ?">
       <div class="search"></div>
 </div> 
-  
-
-<div class="page">
+  <div class="page">
     <div class="globe-wrapper">
         <canvas id="globe-3d"></canvas>
         <div class="info"><span></span></div>
     </div>
+</div>
+      <div class="weather-popup">
+      <h3>Météo</h3>
+      <p id="weather-data"></p>
 </div>
 
 <svg id="map">

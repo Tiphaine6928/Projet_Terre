@@ -235,19 +235,6 @@ body {
   }
 }
 
-.info2-popup {
-    display: none;
-    position: absolute;
-    top: 30%;
-    left: 1%
-    padding: 20px;
-    background-color: #ecccd2;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    max-width: 300px;
-}
-
 .info2-popup h2 {
     margin-top: 0;
 }

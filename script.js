@@ -282,7 +282,7 @@ function createControls() {
 async function fetchCountryData(countryName) {
     const apiURL = "https://restcountries.com/v3.1/name/";
     try {
-        const response = await fetch(`${apiURL}${countryName}?fields=name,flags,capital,currencies`);
+        const response = await fetch(`${apiURL}${countryName}?fields=name,flags,capital,currencies,languages`);
         if (!response.ok) throw new Error('Country not found');
         let data = await response.json();
 
@@ -291,11 +291,28 @@ async function fetchCountryData(countryName) {
         const currencySymbol = Object.values(country.currencies)[0].symbol;
         const capital = country.capital[0];
 
+        let languageText = "";
+
+        if (!country.languages || Object.keys(country.languages).length === 0) {
+          languageText = "No languages found";
+        } else if (Object.keys(country.languages).length === 1) {
+          languageText = `Language: ${Object.values(country.languages)[0]}`;
+        } else {
+          const languages = Object.values(country.languages);
+          for (let i = 0; i < languages.length; i++) {
+            languageText += `${languages[i]}`;
+            if (i !== languages.length - 1) {
+              languageText += ", ";
+            }
+          }
+        }
+        
         infoPopupEl.innerHTML = `
             <h2>${country.name.common}</h2>
             <h3>${country.name.official}</h3>
             <p>Capital: ${capital}</p>
             <p>Currency: ${currencyName} (${currencySymbol})</p>
+            <p>${languageText}</p>
             <img src="${country.flags.svg}" alt="${country.name.common} Flag">
         `;
         infoPopupEl.style.display = 'block';

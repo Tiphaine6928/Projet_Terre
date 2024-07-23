@@ -9,8 +9,8 @@ const svgCountries = Array.from(svgMapDomEl.querySelectorAll("path"));
 const svgCountryDomEl = document.querySelector("#country");
 const countryNameEl = document.querySelector(".info span");
 const infoPopupEl = document.querySelector(".info-popup");
-const info2PopupEl = document.querySelector(".info2-popup");
 const placeholderInput = document.querySelector('input[placeholder="On va où ?"]');
+const weatherPopupEl = document.querySelector(".weather-popup");
 
 let renderer, scene, camera, rayCaster, pointer, controls;
 let globeGroup, globeColorMesh, globeStrokesMesh, globeSelectionOuterMesh;
@@ -119,8 +119,7 @@ function createGlobe() {
     const globeGeometry = new THREE.IcosahedronGeometry(1, 20);
 
     const globeColorMaterial = new THREE.MeshBasicMaterial({
-        transparent: true,
-        alphaTest: true,
+        color: 0x0000ff, // Couleur bleue pour les zones d'eau
         side: THREE.DoubleSide
     });
     const globeStrokeMaterial = new THREE.MeshBasicMaterial({
@@ -202,6 +201,7 @@ function prepareLowResTextures() {
     setMapTexture(globeSelectionOuterMesh.material, dataUris[hoveredCountryIdx]);
 }
 
+
 function updateMap(uv = { x: 0, y: 0 }) {
     const pointObj = svgMapDomEl.createSVGPoint();
     pointObj.x = uv.x * svgViewBox[0];
@@ -278,11 +278,27 @@ function createControls() {
         .name("fog distance");
 }
 
+// Fonction d'appel de l'API en amont de celle de Country API \\
+async function fetchWeatherData(countryName) {
+    const apiKey = '62fa436d5950ece867f81767b004ca78'; // Remplace par ta clé API OpenWeatherMap
+    const apiURL = `https://api.openweathermap.org/data/2.5/weather?q=${countryName}&appid=${apiKey}&units=metric`;
+    try {
+      const response = await fetch(apiURL);
+      if (!response.ok) throw new Error('Weather data not found');
+      let data = await response.json();
+      const weatherDescription = data.weather[0].description;
+      const temperature = data.main.temp;
+      return `Description: ${weatherDescription}, Temperature: ${temperature}°C`;
+    } catch (error) {
+      return `Error fetching weather data: ${error.message}`;
+    }
+  }
+
 
 async function fetchCountryData(countryName) {
     const apiURL = "https://restcountries.com/v3.1/name/";
     try {
-        const response = await fetch(`${apiURL}${countryName}?fields=name,flags,capital,currencies,languages`);
+        const response = await fetch(`${apiURL}${countryName}?fields=name,flags,capital,currencies`);
         if (!response.ok) throw new Error('Country not found');
         let data = await response.json();
 
@@ -291,45 +307,28 @@ async function fetchCountryData(countryName) {
         const currencySymbol = Object.values(country.currencies)[0].symbol;
         const capital = country.capital[0];
 
-        let languageText = "";
-
-        if (!country.languages || Object.keys(country.languages).length === 0) {
-          languageText = "No languages found";
-        } else if (Object.keys(country.languages).length === 1) {
-          languageText = `Language: ${Object.values(country.languages)[0]}`;
-        } else {
-          const languages = Object.values(country.languages);
-          for (let i = 0; i < languages.length; i++) {
-            languageText += `${languages[i]}`;
-            if (i !== languages.length - 1) {
-              languageText += ", ";
-            }
-          }
-        }
-        
         infoPopupEl.innerHTML = `
             <h2>${country.name.common}</h2>
             <h3>${country.name.official}</h3>
             <p>Capital: ${capital}</p>
             <p>Currency: ${currencyName} (${currencySymbol})</p>
-            <p>${languageText}</p>
             <img src="${country.flags.svg}" alt="${country.name.common} Flag">
         `;
         infoPopupEl.style.display = 'block';
     } catch (error) {
-        infoPopupEl.innerHTML = `<p>${error.message}</p>`;
-        infoPopupEl.style.display = 'block';
+      infoPopupEl.innerHTML = `<p>${error.message}</p>`;
+      infoPopupEl.style.display = 'block';
     }
-}
-
-// Événement pour la barre de recherche
-const searchInput = document.querySelector("input[placeholder='On va où ?']");
-searchInput.addEventListener("keypress", function (e) {
+  }
+  
+  // Barre de recherche
+  const searchInput = document.querySelector("input[placeholder='On va où ?']");
+  searchInput.addEventListener("keypress", function (e) {
     if (e.key === 'Enter') {
-        fetchCountryData(searchInput.value);
+      fetchCountryData(searchInput.value);
     }
-});
-
+  });
+  
 
 
 
